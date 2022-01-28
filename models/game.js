@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const gameSchema = new mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   gameId: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   playerA: {
     name: String,
@@ -19,10 +19,8 @@ const gameSchema = new mongoose.Schema({
     type: Number,
   },
   winner: {
-    type: String
-  }
-})
+    type: String,
+  },
+});
 
-
-
-module.exports = mongoose.model('Game', gameSchema);
+module.exports = mongoose.model("Game", gameSchema);
