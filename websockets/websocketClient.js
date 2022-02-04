@@ -1,20 +1,20 @@
 const { addGametoPlayer } = require("../utils/dbHelper");
-const Game = require("../models/game")
-const { findObjectIndexFromArray } = require('../utils/arrayService');
+const Game = require("../models/game");
+const { findObjectIndexFromArray } = require("../utils/arrayService");
 const { findWinner } = require("../utils/rockPaperScissors");
-const WebSocketClient = require('websocket').client;
-const mongoose = require('mongoose');
+const WebSocketClient = require("websocket").client;
+const mongoose = require("mongoose");
 const client = new WebSocketClient();
 
 // connect to Reaktor's api
-client.connect('ws://bad-api-assignment.reaktor.com/rps/live');
+client.connect("ws://bad-api-assignment.reaktor.com/rps/live");
 
 // define arrays for live games and recent games
 let ongoingGames = [];
 let recentGames = [];
 
 // when connected to api
-client.on('connect', (connection) => {
+client.on("connect", (connection) => {
   console.log("connected to api");
 
   connection.on("message", (message) => {
@@ -24,8 +24,8 @@ client.on('connect', (connection) => {
     const liveObj = {
       ...msg,
       ended: false,
-      winner: ""
-    }
+      winner: "",
+    };
 
     //if the type is GAME_BEGIN add it to the live game array
     if (msg.type === "GAME_BEGIN") {
@@ -34,15 +34,23 @@ client.on('connect', (connection) => {
       ongoingGames.push(liveObj);
     } else {
       //find index of the game in the ongoingGames array (sometimes the game is already live before the server was up)
-      const indexOfGame = findObjectIndexFromArray(ongoingGames, "gameId", msg.gameId)
+      const indexOfGame = findObjectIndexFromArray(
+        ongoingGames,
+        "gameId",
+        msg.gameId
+      );
       if (indexOfGame !== -1) {
         // game has ended and the game was in our array
 
         // remove game from ongoing games after 5 seconds
         setTimeout(() => {
-          const gameToRemoveIndex = findObjectIndexFromArray(ongoingGames, "gameId", msg.gameId)
+          const gameToRemoveIndex = findObjectIndexFromArray(
+            ongoingGames,
+            "gameId",
+            msg.gameId
+          );
           ongoingGames.splice(gameToRemoveIndex, 1);
-        }, 5000)
+        }, 5000);
 
         // pop the oldest game in the array
         if (recentGames.length >= 10) {
@@ -63,37 +71,44 @@ client.on('connect', (connection) => {
         ended: true,
         playerA: msg.playerA,
         playerB: msg.playerB,
-        winner: findWinner(msg.playerA, msg.playerB)
+        winner: findWinner(msg.playerA, msg.playerB),
       });
 
       // save new game and add game references to the players
-      game.save()
-        .then(data => {
-          addGametoPlayer(game.playerA.name, game._id)
-          addGametoPlayer(game.playerB.name, game._id)
+      game
+        .save()
+        .then(() => {
+          addGametoPlayer(game.playerA.name, game._id);
+          addGametoPlayer(game.playerB.name, game._id);
         })
-        .catch(err => console.log(err));
+        .catch((err) => console.log(err));
     }
-  })
+  });
 
   // on disconnect try to reconnect
   connection.on("close", () => {
     console.log("disconnected, attempting to reconnect");
     setTimeout(() => {
-      client.connect('ws://bad-api-assignment.reaktor.com/rps/live');
-    }, 2000)
-  })
+      client.connect("ws://bad-api-assignment.reaktor.com/rps/live");
+    }, 2000);
+  });
 
-})
+  connection.on("error", () => {
+    console.log("error, attempting to reconnect");
+    setTimeout(() => {
+      client.connect("ws://bad-api-assignment.reaktor.com/rps/live");
+    }, 2000);
+  });
+});
 
 // gets ongoign and live games for other modules to use
 const getGames = () => {
   return {
     ongoingGames,
-    recentGames
-  }
-}
+    recentGames,
+  };
+};
 
 module.exports = {
-  getGames
-}
+  getGames,
+};

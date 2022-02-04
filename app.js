@@ -1,11 +1,11 @@
-const config = require("./configs/config");
+const config = require("./config/config");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const gamesRouter = require("./controllers/games");
 const playersRouter = require("./controllers/players");
-const { getAllData } = require("./utils/copyDataBase");
+//const { getAllData } = require("./utils/copyDataBase");
 
 // connect to mongoose
 mongoose
@@ -18,7 +18,7 @@ mongoose
   });
 
 //update game data after restart
-getAllData();
+//getAllData(); currently disabled
 // use middlewares
 app.use(express.json());
 app.use(cors());

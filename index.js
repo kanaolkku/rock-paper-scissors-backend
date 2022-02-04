@@ -14,6 +14,6 @@ const io = new Server(server, {
 // start server with specified settings
 startIoServer(io);
 
-server.listen(config.PORT, () => {
+server.listen(config.PORT || 3001, () => {
   console.log("Server is running on port 3000");
 });
